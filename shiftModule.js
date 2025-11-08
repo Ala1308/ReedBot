@@ -5,6 +5,7 @@ const {
   EmbedBuilder,
   SlashCommandBuilder,
   PermissionFlagsBits,
+  MessageFlags,
 } = require('discord.js');
 const { randomUUID } = require('crypto');
 const config = require('./config');
@@ -103,12 +104,17 @@ async function handleShiftChatCommand(interaction) {
 
   // Admin-only for ALL shift commands
   if (!isAdmin(interaction.member)) {
-    await interaction.reply({ content: '❌ Toutes les commandes /shift sont réservées aux administrateurs.', ephemeral: true });
+    await interaction.reply({ 
+      content: '❌ Toutes les commandes /shift sont réservées aux administrateurs.', 
+      flags: [MessageFlags.Ephemeral] 
+    });
     return true;
   }
 
   // /shift post
   if (sub === 'post') {
+    // Defer reply for long operation
+    await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
     const title = interaction.options.getString('title');
     const startDate = interaction.options.getString('start_date');
     const durationHours = interaction.options.getInteger('duration_hours');
@@ -173,9 +179,8 @@ async function handleShiftChatCommand(interaction) {
       console.error('❌ Error saving shift to Firestore:', error);
     }
 
-    await interaction.reply({
+    await interaction.editReply({
       content: `✅ Contrat publié : **${title}**\nID: \`${shiftId}\``,
-      ephemeral: true,
     });
     return true;
   }
@@ -188,7 +193,10 @@ async function handleShiftChatCommand(interaction) {
     const apps = await listApplicants(interaction.guildId, shiftId, filterRole);
     
     if (!apps.length) {
-      await interaction.reply({ content: '❌ Aucun candidat pour ce contrat.', ephemeral: true });
+      await interaction.reply({ 
+        content: '❌ Aucun candidat pour ce contrat.', 
+        flags: [MessageFlags.Ephemeral] 
+      });
       return true;
     }
 
@@ -198,22 +206,23 @@ async function handleShiftChatCommand(interaction) {
 
     await interaction.reply({
       content: `**📋 Candidats pour ${shiftId}:**\n\n${lines.join('\n')}`,
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
     return true;
   }
 
   // /shift assign
   if (sub === 'assign') {
+    await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+    
     const shiftId = interaction.options.getString('shift_id');
     const user = interaction.options.getUser('user');
     
     const shift = await getShift(interaction.guildId, shiftId);
     
     if (!shift || shift.status !== 'open') {
-      await interaction.reply({
+      await interaction.editReply({
         content: '❌ Ce contrat n\'est pas ouvert ou n\'existe pas.',
-        ephemeral: true,
       });
       return true;
     }
@@ -254,9 +263,8 @@ async function handleShiftChatCommand(interaction) {
       `Merci de confirmer ta disponibilité !`
     );
 
-    await interaction.reply({
+    await interaction.editReply({
       content: `✅ Contrat assigné à <@${user.id}> avec succès !`,
-      ephemeral: true,
     });
     return true;
   }
@@ -268,7 +276,7 @@ async function handleShiftChatCommand(interaction) {
     
     await interaction.reply({
       content: `✅ Attribution retirée. Le contrat \`${shiftId}\` est ré-ouvert.`,
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
     return true;
   }
@@ -280,7 +288,7 @@ async function handleShiftChatCommand(interaction) {
     
     await interaction.reply({
       content: `✅ Contrat \`${shiftId}\` fermé aux candidatures.`,
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
     return true;
   }
@@ -292,7 +300,7 @@ async function handleShiftChatCommand(interaction) {
     if (!rows.length) {
       return interaction.reply({
         content: '📭 Tu n\'as assigné aucun contrat pour le moment.',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
 
@@ -302,7 +310,7 @@ async function handleShiftChatCommand(interaction) {
 
     await interaction.reply({
       content: `**📋 Contrats que tu as assignés :**\n\n${lines.join('\n')}`,
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
     return true;
   }
@@ -328,14 +336,14 @@ async function handleShiftButton(interaction) {
     if (!shift || shift.status !== 'open') {
       return interaction.reply({
         content: '❌ Ce contrat n\'est plus ouvert aux candidatures.',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
 
     if (!hasAnyTutorRole(interaction.member)) {
       return interaction.reply({
         content: '❌ Tu dois être au moins **Tuteur - Niveau 1** pour postuler.',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
 
@@ -348,7 +356,7 @@ async function handleShiftButton(interaction) {
 
     return interaction.reply({
       content: '✅ Ta candidature a été envoyée ! Les admins pourront la consulter.',
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
   }
 
@@ -359,7 +367,7 @@ async function handleShiftButton(interaction) {
 
     return interaction.reply({
       content: '↩️ Ta candidature a été retirée.',
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
   }
 

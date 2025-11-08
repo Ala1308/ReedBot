@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits, MessageFlags } = require('discord.js');
 const config = require('./config');
 const progressManager = require('./progressManager');
 const onboardingFlow = require('./onboardingFlow');
@@ -16,7 +16,7 @@ const client = new Client({
 // Stockage temporaire pour les quiz en cours
 const activeQuizzes = new Map();
 
-client.on('ready', () => {
+client.once('clientReady', () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
   console.log('🟢 Bot is online and ready!');
   console.log(`📊 Tracking ${progressManager.getAllUsers().length} users' progress`);
@@ -35,7 +35,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.channelId !== config.channels.onboarding) {
       await interaction.reply({
         content: '❌ Cette commande doit être utilisée dans le canal <#' + config.channels.onboarding + '>',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
       return;
     }
@@ -78,7 +78,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.channelId !== config.channels.onboarding) {
       await interaction.reply({
         content: '❌ Cette commande doit être utilisée dans le canal <#' + config.channels.onboarding + '>',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
       return;
     }
@@ -96,7 +96,7 @@ client.on('interactionCreate', async (interaction) => {
           '2️⃣ Postuler à une offre dans le canal des contrats\n' +
           '3️⃣ Être accepté et recevoir le rôle **Tuteur - Apparié (N1A)**\n\n' +
           '**Reviens ensuite pour finir ton onboarding !** 🎓',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
       return;
     }
@@ -163,13 +163,13 @@ client.on('interactionCreate', async (interaction) => {
 
       await interaction.reply({
         content: `✅ Ton thread de Formation Niveau 1 a été créé : ${thread}\n\nSuis les instructions à l'intérieur !`,
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     } catch (error) {
       console.error('Error creating thread:', error);
       await interaction.reply({
         content: '❌ Erreur lors de la création du thread. Contacte un administrateur.',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
     return;
@@ -195,13 +195,13 @@ client.on('interactionCreate', async (interaction) => {
 
       await interaction.reply({
         content: `✅ Ton thread de Formation Niveau 2 a été créé : ${thread}\n\nSuis les instructions à l'intérieur !`,
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     } catch (error) {
       console.error('Error creating thread:', error);
       await interaction.reply({
         content: '❌ Erreur lors de la création du thread. Contacte un administrateur.',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
     return;
@@ -216,7 +216,7 @@ client.on('interactionCreate', async (interaction) => {
     if (!currentStep) {
       await interaction.reply({
         content: '❌ Erreur : étape introuvable.',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
       return;
     }

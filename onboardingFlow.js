@@ -22,7 +22,7 @@ module.exports = {
     fields: [
       { name: 'Lien', value: '🎬 *[Vidéo appariement à venir]*' },
       { name: 'Durée', value: '5–10 minutes' },
-      { name: 'À retenir', value: 'Chaque offre reste **ouverte 24h** ; tu **postules dans le thread** avec un court message pro + disponibilités.' },
+      { name: 'À retenir', value: 'Chaque offre reste **ouverte 24h** ; tu **postules en cliquant sur le bouton "Postuler"** sous l\'offre.' },
     ],
     buttons: [
       { id: 'btn_N1_video_done', label: '🎥 Vidéo complétée', style: 'Primary' },
@@ -56,11 +56,11 @@ module.exports = {
         q: 'Comment postuler (bidder) ?',
         options: [
           'Envoyer un courriel à la direction',
-          "Cliquer sur un bouton d'inscription",
+          'Cliquer sur le bouton "Postuler" sous l\'offre',
           'Répondre dans le thread Discord avec une courte présentation',
           'Remplir un formulaire externe',
         ],
-        correctIndex: 2,
+        correctIndex: 1,
       },
     ],
     passMessage: '✅ Parfait. Passons au test pratique (offre fictive).',
@@ -77,21 +77,21 @@ module.exports = {
     id: 'N1-04',
     level: 1,
     type: 'practice',
-    title: 'Test — Candidature à une offre (fictive)',
-    description: 'Voici une **offre fictive**. Poste ta candidature dans ce thread en **3–5 phrases** : dispo, expérience, pourquoi tu es un bon fit.',
+    title: 'Test — Comprendre une offre (fictive)',
+    description: 'Voici une **offre fictive**. Lis attentivement les détails pour comprendre comment analyser une offre avant de postuler.',
     fields: [
       {
-        name: 'Offre',
-        value: 'Élève **Secondaire 2**, **Mathématiques** • Disponibilités: **Lun 18–19h / Jeu 17–18h** • Durée: **2h/sem pendant 4 sem** • Début: **12 novembre** • Objectif: **fractions & équations**',
+        name: 'Offre Exemple',
+        value: '📣 **Math Sec 2**\n\n📅 Date de début: 2025-11-12\n⏱️ Durée: 2h/semaine pendant 4 semaines\n🗓️ Disponibilités élève: Lun 18-19h, Jeu 17-18h\n📚 Matières: Mathématiques (fractions & équations)',
       },
       {
-        name: 'Exemple attendu',
-        value: '« Bonjour ! Je suis disponible Lun 18–19h et Jeu 17–18h. J\'ai accompagné 6 élèves en Sec.2 math. Je peux aider à reprendre les bases des fractions et équations, avec exercices ciblés. »',
+        name: '💡 Comment postuler ?',
+        value: 'Quand tu verras une vraie offre dans **#appliquer-à-un-contrat**, tu devras :\n\n1️⃣ **Lire attentivement** les détails de l\'offre\n2️⃣ **Vérifier** que tu es disponible aux heures indiquées\n3️⃣ **Cliquer sur le bouton "Postuler"** sous l\'offre\n\n✅ C\'est aussi simple que ça ! Les admins verront ta candidature.',
       },
     ],
-    footer: 'Clique « J\'ai posté ma candidature » quand ton message est publié.',
+    footer: 'Clique ci-dessous pour confirmer que tu as compris le processus.',
     buttons: [
-      { id: 'btn_N1_practice_done', label: '📨 J\'ai posté ma candidature', style: 'Primary' },
+      { id: 'btn_N1_practice_done', label: '✅ J\'ai compris le processus', style: 'Primary' },
     ],
     onSuccess: {
       nextStep: null,
