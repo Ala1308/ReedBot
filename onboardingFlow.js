@@ -20,7 +20,7 @@ module.exports = {
     title: 'Vidéo 1 — Processus d\'appariement & postulation (5–10 min)',
     description: 'Découvre comment les **offres d\'élèves** sont publiées sur Discord et comment **postuler (bidding)**.',
     fields: [
-      { name: 'Lien', value: '🎬 *[Vidéo appariement à venir]*' },
+      { name: 'Lien', value: '🎬 [Regarder la vidéo](https://youtu.be/ham62aTgKw0)' },
       { name: 'Durée', value: '5–10 minutes' },
       { name: 'À retenir', value: 'Chaque offre reste **ouverte 24h** ; tu **postules en cliquant sur le bouton "Postuler"** sous l\'offre.' },
     ],
