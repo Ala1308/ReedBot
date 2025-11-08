@@ -1,0 +1,27 @@
+# Environment variables
+.env
+cms-centrereed-dab1a3c7275f.json
+# Firebase service account (NEVER commit this!)
+service-account.json
+*-firebase-adminsdk-*.json
+
+# Node modules
+node_modules/
+
+# Progress data
+progress.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
