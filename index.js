@@ -264,6 +264,18 @@ client.on('interactionCreate', async (interaction) => {
       return;
     }
 
+    // Handle "Continuer" button after quiz success
+    if (interaction.customId === 'btn_continue_next') {
+      try {
+        await interaction.deferUpdate();
+        // currentStep is the NEXT step already (set in quiz handler)
+        await sendStep(interaction.channel, userId, currentStepId);
+      } catch (error) {
+        console.error('❌ Error continuing after quiz:', error.message);
+      }
+      return;
+    }
+
     // Regular step progression
     if (currentStep.type !== 'quiz' && currentStep.type !== 'completion' && currentStep.nextStep) {
       try {

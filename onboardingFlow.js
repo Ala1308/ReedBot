@@ -246,7 +246,7 @@ module.exports = {
     passMessage: '✅ Parfait ! Passons aux séances.',
     failMessage: '❌ Revois la vidéo et réessaie.',
     onPass: {
-      nextStep: 'N2-06',
+      nextStep: 'N2-06', // Vidéo Séance Découverte
     },
     onFail: {
       retryStep: 'N2-04',
@@ -312,7 +312,7 @@ module.exports = {
     passMessage: '✅ Excellent ! Passons aux séances récurrentes.',
     failMessage: '❌ Revois la vidéo et réessaie.',
     onPass: {
-      nextStep: 'N2-08',
+      nextStep: 'N2-08', // Vidéo Séances Récurrentes
     },
     onFail: {
       retryStep: 'N2-06',
