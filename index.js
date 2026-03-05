@@ -109,6 +109,7 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.reply({
         embeds: [embed],
         components: [row],
+        flags: [MessageFlags.Ephemeral], // Message privé (seulement visible par l'utilisateur)
       });
     } catch (error) {
       console.error('❌ Error replying to /start_onboarding:', error.message);
@@ -173,6 +174,7 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.reply({
       embeds: [embed],
       components: [row],
+      flags: [MessageFlags.Ephemeral], // Message privé (seulement visible par l'utilisateur)
     });
   }
 });
