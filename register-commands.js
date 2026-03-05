@@ -5,15 +5,11 @@ const { shiftCommands } = require('./shiftModule');
 const commands = [
   new SlashCommandBuilder()
     .setName('start_onboarding')
-    .setDescription('Démarrer la Formation Niveau 1 (Outils & Appariement)')
+    .setDescription('Démarrer la Formation Niveau 1 (Discord & Applications)')
     .toJSON(),
   new SlashCommandBuilder()
     .setName('finish_onboarding')
-    .setDescription('Formation Séances (Découverte & Récurrentes) - Requiert rôle Apparié')
-    .toJSON(),
-  new SlashCommandBuilder()
-    .setName('complete_training')
-    .setDescription('Formation Niveau 2 (Méthode Centre Reed) - Requiert rôle Apparié')
+    .setDescription('Formation Complète N2 (Méthode, Outils, Séances) - Requiert rôle Apparié')
     .toJSON(),
   ...shiftCommands,
 ];
