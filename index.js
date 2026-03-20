@@ -3,6 +3,7 @@ const config = require('./config');
 const progressManager = require('./progressManager');
 const onboardingFlow = require('./onboardingFlow');
 const { handleShiftChatCommand, handleShiftButton } = require('./shiftModule');
+const { adminCommands, handleAdminChatCommand, handleLegacyAdminMessage } = require('./adminModule');
 
 const client = new Client({
   intents: [
@@ -37,6 +38,7 @@ client.once('clientReady', async () => {
         .setDescription('Formation complète Reed (4 vidéos, 4 quiz) - Requiert rôle apparié')
         .toJSON(),
       ...shiftCommands,
+      ...adminCommands,
     ];
     
     const rest = new REST({ version: '10' }).setToken(config.token);
@@ -64,6 +66,7 @@ client.on('interactionCreate', async (interaction) => {
 
   // Handle shift commands first
   if (await handleShiftChatCommand(interaction)) return;
+  if (await handleAdminChatCommand(interaction)) return;
 
   // Commande /start_onboarding - Formation Niveau 1
   if (interaction.commandName === 'start_onboarding') {
@@ -637,91 +640,8 @@ async function evaluateQuiz(interaction, userId, quizData) {
   activeQuizzes.delete(userId);
 }
 
-// Admin commands
 client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
-  
-  // Check admin permission
-  const isAdmin = message.member.permissions.has(PermissionFlagsBits.Administrator);
-  if (!isAdmin) return;
-
-  // !reset @user - Reset user progress
-  if (message.content.startsWith('!reset ')) {
-    const mentionedUser = message.mentions.users.first();
-    if (mentionedUser) {
-      progressManager.resetUserProgress(mentionedUser.id);
-      await message.reply(`✅ Progression de ${mentionedUser.tag} réinitialisée.`);
-    } else {
-      await message.reply('❌ Usage: `!reset @user`');
-    }
-    return;
-  }
-
-  // !progress @user - Check user progress
-  if (message.content.startsWith('!progress ')) {
-    const mentionedUser = message.mentions.users.first();
-    if (mentionedUser) {
-      const progress = progressManager.getUserProgress(mentionedUser.id);
-      const step = onboardingFlow[progress.currentStep];
-      await message.reply(
-        `📊 **Progression de ${mentionedUser.tag}**\n` +
-        `Étape actuelle : ${progress.currentStep}${step ? ` - ${step.title}` : ''}\n` +
-        `Tentatives de quiz : ${JSON.stringify(progress.quizAttempts, null, 2)}`
-      );
-    } else {
-      await message.reply('❌ Usage: `!progress @user`');
-    }
-    return;
-  }
-
-  // !reset_roles @user - Remove all onboarding roles from user
-  if (message.content.startsWith('!reset_roles ')) {
-    const mentionedUser = message.mentions.users.first();
-    if (mentionedUser) {
-      try {
-        const guild = message.guild;
-        const member = await guild.members.fetch(mentionedUser.id);
-        
-        const rolesToRemove = [
-          config.roles.tuteurN1,
-          config.roles.tuteurN1A,
-          config.roles.tuteurN2,
-        ].filter(roleId => roleId && !roleId.startsWith('ROLE_ID_'));
-
-        let removedCount = 0;
-        for (const roleId of rolesToRemove) {
-          if (member.roles.cache.has(roleId)) {
-            await member.roles.remove(roleId);
-            removedCount++;
-          }
-        }
-
-        await message.reply(
-          `✅ **Rôles réinitialisés pour ${mentionedUser.tag}**\n` +
-          `${removedCount} rôle(s) retiré(s).\n\n` +
-          `💡 Utilise aussi \`!reset @${mentionedUser.tag}\` pour réinitialiser la progression.`
-        );
-      } catch (error) {
-        console.error('Error resetting roles:', error);
-        await message.reply(`❌ Erreur lors de la réinitialisation des rôles : ${error.message}`);
-      }
-    } else {
-      await message.reply('❌ Usage: `!reset_roles @user`');
-    }
-    return;
-  }
-
-  // !help - Show admin commands
-  if (message.content === '!help' || message.content === '!admin') {
-    await message.reply(
-      '**🔧 Commandes Admin - Bot Onboarding**\n\n' +
-      '`!progress @user` - Voir la progression d\'un utilisateur\n' +
-      '`!reset @user` - Réinitialiser la progression d\'un utilisateur\n' +
-      '`!reset_roles @user` - Retirer tous les rôles d\'onboarding\n' +
-      '`!help` - Afficher cette aide'
-    );
-    return;
-  }
+  await handleLegacyAdminMessage(message);
 });
 
 client.login(config.token);

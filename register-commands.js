@@ -1,6 +1,7 @@
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 const config = require('./config');
 const { shiftCommands } = require('./shiftModule');
+const { adminCommands } = require('./adminModule');
 
 const commands = [
   new SlashCommandBuilder()
@@ -12,6 +13,7 @@ const commands = [
     .setDescription('Formation complète Reed (4 vidéos, 4 quiz) - Requiert rôle apparié')
     .toJSON(),
   ...shiftCommands,
+  ...adminCommands,
 ];
 
 const rest = new REST({ version: '10' }).setToken(config.token);

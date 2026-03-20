@@ -146,6 +146,26 @@ async function listAssignmentsByAdmin(guildId, adminId) {
   return snaps.docs.map(d => d.data());
 }
 
+/**
+ * List shifts created by an admin
+ */
+async function listShiftsByCreator(guildId, adminId) {
+  const snaps = await shiftsCol(guildId)
+    .where('createdBy', '==', adminId)
+    .get();
+  return snaps.docs.map(d => d.data());
+}
+
+/**
+ * List active assignments for the guild
+ */
+async function listActiveAssignments(guildId) {
+  const snaps = await assignsCol(guildId)
+    .where('active', '==', true)
+    .get();
+  return snaps.docs.map(d => d.data());
+}
+
 module.exports = {
   createShift,
   getShift,
@@ -157,5 +177,7 @@ module.exports = {
   unassignShift,
   listMyAssignments,
   listAssignmentsByAdmin,
+  listShiftsByCreator,
+  listActiveAssignments,
 };
 

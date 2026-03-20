@@ -18,8 +18,8 @@ const {
   listApplicants,
   assignShift,
   unassignShift,
-  listMyAssignments,
-  listAssignmentsByAdmin,
+  listShiftsByCreator,
+  listActiveAssignments,
 } = require('./shiftStore');
 
 // Button ID helpers
@@ -43,11 +43,26 @@ const tutorSnapshot = (m) => {
   return 'unknown';
 };
 
+const parseDateInput = (value, endOfDay = false) => {
+  if (!value) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+  const date = new Date(`${value}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z`);
+  return Number.isNaN(date.getTime()) ? null : date.getTime();
+};
+
+const formatDiscordTime = (timestampMs) => {
+  if (!timestampMs) return 'N/A';
+  const ts = Math.floor(timestampMs / 1000);
+  return `<t:${ts}:d> • <t:${ts}:R>`;
+};
+
 // Export slash command definition
 const shiftCommands = [
   new SlashCommandBuilder()
     .setName('shift')
     .setDescription('Gérer les contrats de tutorat (Admins seulement)')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand(sc =>
       sc
         .setName('post')
@@ -88,7 +103,49 @@ const shiftCommands = [
         .setDescription('Fermer un contrat (admins)')
         .addStringOption(o => o.setName('shift_id').setDescription('ID du contrat').setRequired(true))
     )
-    .addSubcommand(sc => sc.setName('my').setDescription('Voir tous mes contrats assignés (Admin)'))
+    .addSubcommand(sc =>
+      sc
+        .setName('my')
+        .setDescription('Voir les contrats que tu gères avec filtres')
+        .addStringOption(o =>
+          o
+            .setName('status')
+            .setDescription('Filtrer par statut')
+            .setRequired(false)
+            .addChoices(
+              { name: 'Tous', value: 'all' },
+              { name: 'Assignés', value: 'assigned' },
+              { name: 'Non assignés', value: 'unassigned' },
+              { name: 'Ouverts', value: 'open' },
+              { name: 'Fermés', value: 'closed' }
+            )
+        )
+        .addIntegerOption(o =>
+          o
+            .setName('year')
+            .setDescription('Année de publication (ex: 2026)')
+            .setRequired(false)
+            .setMinValue(2024)
+            .setMaxValue(2100)
+        )
+        .addStringOption(o =>
+          o.setName('subject').setDescription('Filtrer par matière').setRequired(false)
+        )
+        .addStringOption(o =>
+          o.setName('published_after').setDescription('Publié à partir de YYYY-MM-DD').setRequired(false)
+        )
+        .addStringOption(o =>
+          o.setName('published_before').setDescription('Publié jusqu’à YYYY-MM-DD').setRequired(false)
+        )
+        .addIntegerOption(o =>
+          o
+            .setName('limit')
+            .setDescription('Nombre max de résultats (1-50)')
+            .setRequired(false)
+            .setMinValue(1)
+            .setMaxValue(50)
+        )
+    )
     .toJSON(),
 ];
 
@@ -293,25 +350,138 @@ async function handleShiftChatCommand(interaction) {
     return true;
   }
 
-  // /shift my - Show all shifts assigned BY this admin
+  // /shift my - Show contracts created by this admin with filters
   if (sub === 'my') {
-    const rows = await listAssignmentsByAdmin(interaction.guildId, interaction.user.id);
-    
-    if (!rows.length) {
+    const statusFilter = interaction.options.getString('status') || 'all';
+    const yearFilter = interaction.options.getInteger('year');
+    const subjectFilter = (interaction.options.getString('subject') || '').trim().toLowerCase();
+    const publishedAfterInput = interaction.options.getString('published_after');
+    const publishedBeforeInput = interaction.options.getString('published_before');
+    const limit = interaction.options.getInteger('limit') || 10;
+
+    const publishedAfter = parseDateInput(publishedAfterInput, false);
+    const publishedBefore = parseDateInput(publishedBeforeInput, true);
+
+    if (publishedAfterInput && !publishedAfter) {
       return interaction.reply({
-        content: '📭 Tu n\'as assigné aucun contrat pour le moment.',
+        content: '❌ Le filtre `published_after` doit être au format `YYYY-MM-DD`.',
         flags: [MessageFlags.Ephemeral],
       });
     }
 
-    const lines = rows.map(
-      r => `• **Shift ${r.shiftId}** — Assigné à <@${r.userId}> • <t:${Math.floor(r.assignedAt / 1000)}:R>`
-    );
+    if (publishedBeforeInput && !publishedBefore) {
+      return interaction.reply({
+        content: '❌ Le filtre `published_before` doit être au format `YYYY-MM-DD`.',
+        flags: [MessageFlags.Ephemeral],
+      });
+    }
 
-    await interaction.reply({
-      content: `**📋 Contrats que tu as assignés :**\n\n${lines.join('\n')}`,
-      flags: [MessageFlags.Ephemeral],
+    await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+
+    const [shifts, assignments] = await Promise.all([
+      listShiftsByCreator(interaction.guildId, interaction.user.id),
+      listActiveAssignments(interaction.guildId),
+    ]);
+
+    if (!shifts.length) {
+      return interaction.editReply('📭 Tu n’as publié aucun contrat pour le moment.');
+    }
+
+    const assignmentMap = new Map(assignments.map((assignment) => [assignment.shiftId, assignment]));
+
+    const rows = shifts
+      .map((shift) => {
+        const assignment = assignmentMap.get(shift.shiftId);
+        const subjects = Array.isArray(shift.subjects) ? shift.subjects : [];
+        const createdAt = shift.createdAt || null;
+        const isAssigned = Boolean(assignment);
+        const displayStatus = isAssigned ? 'assigné' : shift.status === 'closed' ? 'fermé' : 'ouvert';
+
+        return {
+          ...shift,
+          subjects,
+          createdAt,
+          assignment,
+          isAssigned,
+          displayStatus,
+        };
+      })
+      .filter((row) => {
+        if (statusFilter === 'assigned' && !row.isAssigned) return false;
+        if (statusFilter === 'unassigned' && row.isAssigned) return false;
+        if (statusFilter === 'open' && row.status !== 'open') return false;
+        if (statusFilter === 'closed' && row.status !== 'closed') return false;
+
+        if (yearFilter && row.createdAt) {
+          const createdYear = new Date(row.createdAt).getUTCFullYear();
+          if (createdYear !== yearFilter) return false;
+        }
+
+        if (subjectFilter) {
+          const haystack = row.subjects.join(', ').toLowerCase();
+          if (!haystack.includes(subjectFilter)) return false;
+        }
+
+        if (publishedAfter && row.createdAt && row.createdAt < publishedAfter) return false;
+        if (publishedBefore && row.createdAt && row.createdAt > publishedBefore) return false;
+
+        return true;
+      })
+      .sort((a, b) => {
+        const aTs = a.assignment?.assignedAt || a.createdAt || 0;
+        const bTs = b.assignment?.assignedAt || b.createdAt || 0;
+        return bTs - aTs;
+      });
+
+    if (!rows.length) {
+      return interaction.editReply('📭 Aucun contrat ne correspond aux filtres demandés.');
+    }
+
+    const visibleRows = rows.slice(0, limit);
+    const lines = visibleRows.map((row) => {
+      const published = formatDiscordTime(row.createdAt);
+      const subjects = row.subjects.length ? row.subjects.join(', ') : 'Matière non précisée';
+      const assignmentLine = row.assignment
+        ? `\n  Assigné à <@${row.assignment.userId}> le ${formatDiscordTime(row.assignment.assignedAt)}`
+        : '\n  Non assigné pour le moment';
+
+      return (
+        `• **${row.title || `Shift ${row.shiftId}`}** \`${row.shiftId}\`` +
+        `\n  Statut : **${row.displayStatus}**` +
+        `\n  Matières : ${subjects}` +
+        `\n  Publié : ${published}` +
+        assignmentLine
+      );
     });
+
+    const appliedFilters = [
+      `statut=${statusFilter}`,
+      yearFilter ? `année=${yearFilter}` : null,
+      subjectFilter ? `matière=${subjectFilter}` : null,
+      publishedAfterInput ? `publié_après=${publishedAfterInput}` : null,
+      publishedBeforeInput ? `publié_avant=${publishedBeforeInput}` : null,
+      `limite=${limit}`,
+    ].filter(Boolean);
+
+    const header =
+      `**📋 Contrats que tu gères** (${visibleRows.length}/${rows.length})\n` +
+      `Filtres : ${appliedFilters.join(' • ')}\n\n`;
+
+    const safeLines = [];
+    let contentLength = header.length;
+    for (const line of lines) {
+      const nextLength = contentLength + line.length + (safeLines.length ? 2 : 0);
+      if (nextLength > 1850) break;
+      safeLines.push(line);
+      contentLength = nextLength;
+    }
+
+    const truncatedNote =
+      safeLines.length < visibleRows.length
+        ? `\n\n… ${visibleRows.length - safeLines.length} résultat(s) masqué(s) pour tenir dans un seul message. Réduis \`limit\` ou affine les filtres.`
+        : '';
+
+    await interaction.editReply(header + safeLines.join('\n\n') + truncatedNote);
     return true;
   }
 
