@@ -8,10 +8,10 @@ module.exports = {
   // Canaux
   channels: {
     onboarding: process.env.CHANNEL_ONBOARDING,
-    contrats: process.env.CHANNEL_CONTRATS, // #offres
+    contrats: process.env.CHANNEL_OFFRES || process.env.CHANNEL_CONTRATS, // #offres
     equipe: process.env.CHANNEL_EQUIPE,
-    annonce: process.env.CHANNEL_ANNONCE,
-    formation: process.env.CHANNEL_FORMATION,
+    annonce: process.env.CHANNEL_ANNONCE || process.env.CHANNEL_OFFRES,
+    formation: process.env.CATEGORY_FORMATION || process.env.CHANNEL_FORMATION,
   },
   
   // Rôles

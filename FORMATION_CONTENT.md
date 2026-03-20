@@ -378,8 +378,8 @@ Ce que tu vas apprendre :
 - `Tuteur - niveau 2`
 
 **Acces debloques :**
-- `#ANNONCE`
-- `#FORMATION`
+- `#OFFRES`
+- `Formation continue`
 
 ---
 

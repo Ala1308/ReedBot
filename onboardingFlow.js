@@ -114,7 +114,7 @@ module.exports = {
   // ============================================
   // NIVEAU 2 - Formation complète (N1A → N2)
   // Commande: /finish_onboarding (requiert rôle N1A)
-  // Résultat: Rôle Tuteur N2 → Accès #ANNONCE + #FORMATION
+  // Résultat: Rôle Tuteur N2 → Accès #OFFRES + Formation continue
   // ============================================
 
   'N2-01': {
@@ -483,7 +483,7 @@ module.exports = {
     fields: [
       { name: '✅ Tu as appris', value: '• La méthode pédagogique Reed\n• Comment utiliser nos principaux outils et ressources numériques\n• Préparer ta Séance Découverte (première séance)\n• Structurer tes séances récurrentes' },
       { name: '🎁 Récompense finale', value: 'Tu viens de recevoir le rôle **Tuteur - niveau 2** !' },
-      { name: '🔓 Accès débloqué', value: 'Tu as maintenant accès aux canaux :\n• **#ANNONCE**\n• **#FORMATION**' },
+      { name: '🔓 Accès débloqué', value: 'Tu as maintenant accès à :\n• **#OFFRES**\n• **Formation continue**' },
       { name: '💙 Certification', value: 'Tu es maintenant un tuteur certifié au sein du Centre Reed (N2 Actif).' },
     ],
     buttons: [
@@ -492,7 +492,7 @@ module.exports = {
     onSuccess: {
       nextStep: null,
       addRoles: ['tuteurN2'],
-      message: '🎉 **Formation terminée !**\n\nTu es maintenant **Tuteur - niveau 2**.\n\n🔓 Accès débloqué :\n• <#' + config.channels.annonce + '>\n• <#' + config.channels.formation + '>\n\n**Tu es prêt à enseigner avec la méthode Reed.** 💙',
+      message: '🎉 **Formation terminée !**\n\nTu es maintenant **Tuteur - niveau 2**.\n\n🔓 Accès débloqué :\n• <#' + config.channels.contrats + '>\n• <#' + config.channels.formation + '>\n\n**Tu es prêt à enseigner avec la méthode Reed.** 💙',
     },
   },
 };

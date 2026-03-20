@@ -156,7 +156,7 @@ client.on('interactionCreate', async (interaction) => {
         '• 📝 4 quiz de validation\n\n' +
         '**Résultat :**\n' +
         '✅ Rôle **Tuteur - niveau 2**\n' +
-        '🔓 Accès aux canaux **#ANNONCE** et **#FORMATION**'
+        '🔓 Accès à **#OFFRES** et à la section **Formation continue**'
       )
       .addFields(
         { name: '⏱️ Durée estimée', value: '1h20' },
@@ -447,32 +447,33 @@ async function sendQuizQuestion(interaction, userId, quizData, isFirstQuestion =
   const question = quizData.questions[quizData.currentQuestion];
   const questionNum = quizData.currentQuestion + 1;
   const totalQuestions = quizData.questions.length;
+  const optionLabels = ['A', 'B', 'C', 'D', 'E'];
+  const optionsText = question.options
+    .map((option, index) => `**${optionLabels[index]}.** ${option}`)
+    .join('\n');
 
   const embed = new EmbedBuilder()
     .setColor('#FFA500')
     .setTitle(`❓ Question ${questionNum}/${totalQuestions}`)
-    .setDescription(question.q)
+    .setDescription(`${question.q}\n\n${optionsText}`)
     .setFooter({ text: `Quiz : ${onboardingFlow[quizData.stepId].title}` })
     .setTimestamp();
 
   const rows = [];
   
-  // Create buttons for each option (max 5 per row)
+  // Show full answers in the embed and keep buttons short for readability.
   for (let i = 0; i < question.options.length; i++) {
     if (i % 5 === 0) {
       rows.push(new ActionRowBuilder());
     }
     const currentRow = rows[rows.length - 1];
-    
-    const optionLabel = ['A', 'B', 'C', 'D', 'E'][i];
-    const optionText = question.options[i].length > 60 
-      ? question.options[i].substring(0, 57) + '...'
-      : question.options[i];
-    
+
+    const optionLabel = optionLabels[i];
+
     currentRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`quiz_answer_${i}`)
-        .setLabel(`${optionLabel}: ${optionText}`)
+        .setLabel(`Réponse ${optionLabel}`)
         .setStyle(ButtonStyle.Secondary)
     );
   }
