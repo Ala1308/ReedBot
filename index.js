@@ -159,7 +159,7 @@ client.on('interactionCreate', async (interaction) => {
         '• 📝 4 quiz de validation\n\n' +
         '**Résultat :**\n' +
         '✅ Rôle **Tuteur - niveau 2**\n' +
-        '🔓 Accès à **#OFFRES** et à la section **Formation continue**'
+        '🔓 Accès à **#OFFRES**, **#ANNONCES** et à la section **Formation continue**'
       )
       .addFields(
         { name: '⏱️ Durée estimée', value: '1h20' },

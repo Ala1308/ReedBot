@@ -1,6 +1,22 @@
 // Définition complète du flow d'onboarding Centre Reed
 const config = require('./config');
 
+const n2AccessLabels = ['• **#OFFRES**'];
+if (config.channels.annonce) {
+  n2AccessLabels.push('• **#ANNONCES**');
+}
+if (config.channels.formation) {
+  n2AccessLabels.push('• **Formation continue**');
+}
+
+const n2AccessMentions = [`• <#${config.channels.contrats}>`];
+if (config.channels.annonce) {
+  n2AccessMentions.push(`• <#${config.channels.annonce}>`);
+}
+if (config.channels.formation) {
+  n2AccessMentions.push(`• <#${config.channels.formation}>`);
+}
+
 module.exports = {
   // ============================================
   // NIVEAU 1 - Discord et savoir comment appliquer
@@ -114,7 +130,7 @@ module.exports = {
   // ============================================
   // NIVEAU 2 - Formation complète (N1A → N2)
   // Commande: /finish_onboarding (requiert rôle N1A)
-  // Résultat: Rôle Tuteur N2 → Accès #OFFRES + Formation continue
+  // Résultat: Rôle Tuteur N2 → Accès #OFFRES + #ANNONCES + Formation continue
   // ============================================
 
   'N2-01': {
@@ -483,7 +499,7 @@ module.exports = {
     fields: [
       { name: '✅ Tu as appris', value: '• La méthode pédagogique Reed\n• Comment utiliser nos principaux outils et ressources numériques\n• Préparer ta Séance Découverte (première séance)\n• Structurer tes séances récurrentes' },
       { name: '🎁 Récompense finale', value: 'Tu viens de recevoir le rôle **Tuteur - niveau 2** !' },
-      { name: '🔓 Accès débloqué', value: 'Tu as maintenant accès à :\n• **#OFFRES**\n• **Formation continue**' },
+      { name: '🔓 Accès débloqué', value: `Tu as maintenant accès à :\n${n2AccessLabels.join('\n')}` },
       { name: '💙 Certification', value: 'Tu es maintenant un tuteur certifié au sein du Centre Reed (N2 Actif).' },
     ],
     buttons: [
@@ -492,7 +508,7 @@ module.exports = {
     onSuccess: {
       nextStep: null,
       addRoles: ['tuteurN2'],
-      message: '🎉 **Formation terminée !**\n\nTu es maintenant **Tuteur - niveau 2**.\n\n🔓 Accès débloqué :\n• <#' + config.channels.contrats + '>\n• <#' + config.channels.formation + '>\n\n**Tu es prêt à enseigner avec la méthode Reed.** 💙',
+      message: `🎉 **Formation terminée !**\n\nTu es maintenant **Tuteur - niveau 2**.\n\n🔓 Accès débloqué :\n${n2AccessMentions.join('\n')}\n\n**Tu es prêt à enseigner avec la méthode Reed.** 💙`,
     },
   },
 };

@@ -108,6 +108,14 @@ Thèmes de la formation complète :
 - Séance Découverte
 - Séances Récurrentes
 
+### Accès débloqués par niveau
+
+| Niveau | Comment il est obtenu | Rôle attribué | Accès débloqués |
+|--------|------------------------|---------------|-----------------|
+| `Niveau 1` | Après réussite de `/start_onboarding` | `Tuteur - niveau 1` | `#OFFRES` |
+| `Niveau 1A` | Lorsqu’un admin assigne un contrat avec `/shift assign` | `Tuteur - niveau 1A` | accès à `/finish_onboarding` pour compléter la formation avancée |
+| `Niveau 2` | Après réussite de `/finish_onboarding` | `Tuteur - niveau 2` | `#OFFRES`, `#ANNONCES`, `Formations continues` |
+
 ### Gestion des offres de tutorat
 
 Le bot permet aux admins de :
